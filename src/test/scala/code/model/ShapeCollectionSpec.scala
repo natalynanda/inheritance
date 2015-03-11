@@ -9,63 +9,52 @@ class ShapeCollectionSpec extends BaseMongoSessionWordSpec {
 
   "Shape Collection" should {
     "create, validate, save, and retrieve properly Shapes" in {
-      var listShapes: List[Shape[_]] = Nil
+      var listShapes: List[Shape] = Nil
 
-      val square = Square.createRecord
-        .name("Square")
-        .side(10)
+      val shapeType1 = ShapeType.createRecord
+        .nameType("Square")
+      shapeType1.save(true)
 
-      val triangle = Triangle.createRecord
-        .name("Triangle")
-        .base(10)
-        .height(5)
 
-      val circle = Circle.createRecord
-        .name("Circle")
-        .radius(50)
+      val shapeType2 = ShapeType.createRecord
+        .nameType("Triangle")
+      shapeType2.save(true)
+
+
+      val shapeType3 = ShapeType.createRecord
+        .nameType("Square")
+      shapeType3.save(true)
+
+      val square = Square("Square", "", shapeType1.id.get, 10)
+
+      val triangle = Triangle("Triangle", "", shapeType2.id.get, 10, 5)
+
+      val circle = Circle("Circle", "", shapeType3.id.get, 50)
 
       val shapeCollection = ShapeCollection.createRecord
 
-      shapeCollection.listShapes.set(listShapes.map((s: Shape[_]) => s match {
-        case a: Square =>
-          val errorSquare = a.validate
-          if (errorSquare.length > 1) {
-            fail("Validation error: " + errorSquare.mkString(", "))
-          }
-          a.validate.length should equal (0)
-          a.save(false)
-        case b: Triangle =>
-          val errorTriangle = b.validate
-          if (errorTriangle.length > 1) {
-            fail("Validation error: " + errorTriangle.mkString(", "))
-          }
-          b.validate.length should equal (0)
-          b.save(false)
-        case c: Circle =>
-          val errorCircle = c.validate
-          if (errorCircle.length > 1) {
-            fail("Validation error: " + errorCircle.mkString(", "))
-          }
-          c.validate.length should equal (0)
-          c.save(false)
-      }))
+      shapeCollection.shapes.set(square :: triangle :: circle :: Nil)
 
       val errorShapeCollection = shapeCollection.validate
       if (errorShapeCollection.length > 1) {
         fail("Validation error: " + errorShapeCollection.mkString(", "))
       }
       shapeCollection.validate.length should equal (0)
-      shapeCollection.save(false)
+      shapeCollection.save(true)
 
-      shapeCollection.listShapes.value.map((shape: Shape[_]) => shape match {
+      println(ShapeCollection.findAll.toString())
+
+
+      shapeCollection.shapes.value.map((shape: Shape) => shape match {
         case a: Square =>
-          a.side.get should equal (10)
+          a.side should equal (10)
         case b: Triangle =>
-          b.base.get should equal (10)
-          b.height.get should equal (5)
+          b.base should equal (10)
+          b.height should equal (5)
         case c: Circle =>
-          c.radius.get should equal (50)
+          c.radius should equal (50)
       })
+
     }
   }
 
